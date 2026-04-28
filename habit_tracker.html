@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100-Day Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1B4BAB;
+    --blue-light: #E6F1FB;
+    --blue-mid: #4A7FD4;
+    --dark: #0F1623;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #ffffff;
+    --bg: #f8faff;
+    --success: #059669;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--dark);
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(27,75,171,0.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(27,75,171,0.25);
+    color: #93b4f0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(27,75,171,0.4);
+    margin-bottom: 1rem;
+  }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #ffffff;
+    line-height: 1.15;
+    margin-bottom: .5rem;
+  }
+  .header h1 span { color: #93b4f0; font-style: italic; }
+  .header p {
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 300;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* QUOTE TICKER */
+  .quote-bar {
+    background: var(--blue);
+    padding: .75rem 2rem;
+    text-align: center;
+  }
+  .quote-bar p { color: rgba(255,255,255,.9); font-size: 13px; font-style: italic; }
+  .quote-bar span { color: rgba(255,255,255,.6); font-size: 11px; display: block; margin-top: 2px; }
+
+  /* MAIN */
+  .main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* STATS ROW */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 2rem; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--blue);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card .lbl { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  /* DAY NAV */
+  .day-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .nav-btn:hover { background: var(--blue-light); border-color: var(--blue); }
+  .nav-btn:disabled { opacity: .3; cursor: default; }
+  .day-info { flex: 1; text-align: center; }
+  .day-info .day-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--text);
+    line-height: 1;
+  }
+  .day-info .day-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .prog-outer {
+    flex: 1;
+    height: 6px;
+    background: var(--blue-light);
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 200px;
+  }
+  .prog-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 10px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* HABITS */
+  .habits-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .habits { display: flex; flex-direction: column; gap: 10px; margin-bottom: 2rem; }
+  .habit {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all .2s;
+    user-select: none;
+  }
+  .habit:hover { border-color: var(--blue-mid); transform: translateX(3px); }
+  .habit.done {
+    border-color: var(--blue);
+    background: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%);
+  }
+  .habit-emoji { font-size: 22px; width: 30px; text-align: center; flex-shrink: 0; }
+  .habit-text { flex: 1; }
+  .habit-text .h-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .habit-text .h-detail { font-size: 12px; color: var(--muted); }
+  .habit.done .h-name { color: var(--blue); }
+  .check-circle {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+    font-size: 13px;
+    color: transparent;
+  }
+  .habit.done .check-circle {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+  }
+
+  /* COMPLETE BANNER */
+  .done-banner {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 1.25rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    display: none;
+    animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .done-banner.show { display: block; }
+  .done-banner .big { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 4px; }
+  .done-banner .small { font-size: 13px; opacity: .85; }
+  @keyframes popIn { from { transform: scale(.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  /* 100-DAY DOTS */
+  .dots-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .dots-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--blue-light);
+    cursor: pointer;
+    transition: all .15s;
+    border: 2px solid transparent;
+    position: relative;
+  }
+  .dot:hover { transform: scale(1.3); }
+  .dot.current { border-color: var(--blue); }
+  .dot.full { background: var(--blue); }
+  .dot.partial { background: #93b4f0; }
+  .dot-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* RESET */
+  .actions { display: flex; gap: 10px; }
+  .reset-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .reset-btn:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+  .jump-btn {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--blue);
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .jump-btn:hover { background: var(--blue); color: white; }
+
+  /* PHASE LABEL */
+  .phase-label {
+    display: inline-block;
+    background: var(--blue-light);
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: .5rem;
+  }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .stat-card .num { font-size: 1.6rem; }
+    .prog-outer { display: none; }
+    .header { padding: 2rem 1.25rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">Your Personal Journey</div>
+  <h1>100-Day <span>Habit</span> Tracker</h1>
+  <p>One habit at a time. One day at a time. One life transformed.</p>
+</div>
+
+<div class="quote-bar" id="quote-bar">
+  <p id="q-text"></p>
+  <span id="q-auth"></span>
+</div>
+
+<div class="main">
+  <div class="stats">
+    <div class="stat-card"><div class="num" id="s-done">0</div><div class="lbl">Days done</div></div>
+    <div class="stat-card"><div class="num" id="s-streak">0</div><div class="lbl">Streak</div></div>
+    <div class="stat-card"><div class="num" id="s-pct">0%</div><div class="lbl">Complete</div></div>
+  </div>
+
+  <div class="day-nav">
+    <button class="nav-btn" id="prev">&#8592;</button>
+    <div class="day-info">
+      <div class="day-num" id="day-num">Day 1</div>
+      <div class="day-sub" id="day-sub"></div>
+    </div>
+    <div class="prog-outer"><div class="prog-fill" id="prog"></div></div>
+    <button class="nav-btn" id="next">&#8594;</button>
+  </div>
+
+  <div class="done-banner" id="done-banner">
+    <div class="big">Perfect Day! ✦</div>
+    <div class="small">All 7 habits completed. You are unstoppable.</div>
+  </div>
+
+  <p class="habits-title">Tap each habit to check it off</p>
+  <div class="habits" id="habits"></div>
+
+  <p class="dots-title">100-Day Overview</p>
+  <div class="dots-wrap">
+    <div class="dots" id="dots"></div>
+    <div class="dot-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E6F1FB;border:1px solid #93b4f0"></div>Not started</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#93b4f0"></div>Partial</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1B4BAB"></div>Complete</div>
+      <div class="legend-item"><div class="legend-dot" style="border:2px solid #1B4BAB;background:#E6F1FB"></div>Today</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="reset-btn" id="reset-btn">Reset today</button>
+    <button class="jump-btn" id="today-btn">Jump to day 1</button>
+  </div>
+</div>
+
+<script>
+const QUOTES = [
+  ["The secret of getting ahead is getting started.","Mark Twain"],
+  ["Small daily improvements are the key to staggering long-term results.","Robin Sharma"],
+  ["You don't have to be great to start, but you have to start to be great.","Zig Ziglar"],
+  ["Take care of your body. It's the only place you have to live.","Jim Rohn"],
+  ["An investment in knowledge pays the best interest.","Benjamin Franklin"],
+  ["She believed she could, so she did.","R.S. Grey"],
+  ["Progress, not perfection.","Unknown"],
+  ["Every day is a chance to be better than yesterday.","Unknown"],
+  ["Success is the sum of small efforts repeated day in and day out.","Robert Collier"],
+  ["You've survived 100% of your bad days so far.","Unknown"],
+  ["The journey of a thousand miles begins with one step.","Lao Tzu"],
+  ["Reading is to the mind what exercise is to the body.","Joseph Addison"],
+  ["Believe you can and you're halfway there.","Theodore Roosevelt"],
+  ["Don't watch the clock. Do what it does — keep going.","Sam Levenson"],
+  ["You are never too old to set another goal or dream a new dream.","C.S. Lewis"],
+];
+
+const HABITS = [
+  {e:"📚", n:"1 Hour of Learning", d:"React, cybersecurity, Lovable — pick one and go deep"},
+  {e:"🧴", n:"Skincare Routine", d:"Cleanse, moisturize, SPF morning — repeat at night"},
+  {e:"💆", n:"Haircare", d:"Oil, brush, or treatment — at least one step today"},
+  {e:"📖", n:"Read 5 Pages", d:"Any book from your list — even 5 pages counts"},
+  {e:"🏃", n:"10 Min Exercise", d:"Stretch, yoga, or home workout — just move"},
+  {e:"🚶", n:"Go for a Walk", d:"10-15 min outside — fresh air resets the mind"},
+  {e:"🥗", n:"No Junk Food", d:"Whole foods only — you and your family deserve the best"},
+];
+
+const PHASES = [
+  [1,10,"Foundation"],
+  [11,25,"Building"],
+  [26,50,"Consistency"],
+  [51,75,"Momentum"],
+  [76,100,"Finish Strong"],
+];
+
+const STORE = 'habit100_v2';
+let state = JSON.parse(localStorage.getItem(STORE) || '{}');
+let day = parseInt(localStorage.getItem(STORE+'_day') || '1');
+
+function saveDay() { localStorage.setItem(STORE+'_day', day); }
+function saveState() { localStorage.setItem(STORE, JSON.stringify(state)); }
+
+function getDay(d) {
+  if (!state[d]) state[d] = new Array(HABITS.length).fill(false);
+  return state[d];
+}
+
+function countFull() {
+  let c = 0;
+  for (let i = 1; i <= 100; i++) {
+    if (state[i] && state[i].every(h => h)) c++;
+  }
+  return c;
+}
+
+function calcStreak() {
+  let s = 0;
+  for (let i = day; i >= 1; i--) {
+    if (state[i] && state[i].every(h => h)) s++;
+    else break;
+  }
+  return s;
+}
+
+function getPhase(d) {
+  for (let [s, e, name] of PHASES) {
+    if (d >= s && d <= e) return name;
+  }
+  return '';
+}
+
+function render() {
+  const q = QUOTES[(day - 1) % QUOTES.length];
+  document.getElementById('q-text').textContent = '\u201c' + q[0] + '\u201d';
+  document.getElementById('q-auth').textContent = '— ' + q[1];
+
+  const full = countFull();
+  const streak = calcStreak();
+  document.getElementById('s-done').textContent = full;
+  document.getElementById('s-streak').textContent = streak;
+  document.getElementById('s-pct').textContent = Math.round((full / 100) * 100) + '%';
+
+  document.getElementById('day-num').textContent = 'Day ' + day;
+  document.getElementById('day-sub').textContent = getPhase(day) + ' Phase';
+  document.getElementById('prog').style.width = day + '%';
+
+  const d = getDay(day);
+  const allDone = d.every(h => h);
+  document.getElementById('done-banner').className = 'done-banner' + (allDone ? ' show' : '');
+
+  const habitsEl = document.getElementById('habits');
+  habitsEl.innerHTML = '';
+  HABITS.forEach((h, i) => {
+    const done = d[i];
+    const el = document.createElement('div');
+    el.className = 'habit' + (done ? ' done' : '');
+    el.innerHTML = `<div class="habit-emoji">${h.e}</div><div class="habit-text"><div class="h-name">${h.n}</div><div class="h-detail">${h.d}</div></div><div class="check-circle">${done ? '✓' : ''}</div>`;
+    el.onclick = () => {
+      d[i] = !d[i];
+      saveState();
+      render();
+    };
+    habitsEl.appendChild(el);
+  });
+
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  for (let i = 1; i <= 100; i++) {
+    const dot = document.createElement('div');
+    const sd = state[i];
+    const isFull = sd && sd.every(h => h);
+    const isPartial = sd && sd.some(h => h) && !isFull;
+    dot.className = 'dot' + (i === day ? ' current' : '') + (isFull ? ' full' : isPartial ? ' partial' : '');
+    dot.title = 'Day ' + i;
+    dot.onclick = () => { day = i; saveDay(); render(); };
+    dotsEl.appendChild(dot);
+  }
+
+  document.getElementById('today-btn').textContent = 'Jump to Day ' + day;
+  document.getElementById('prev').disabled = day === 1;
+  document.getElementById('next').disabled = day === 100;
+}
+
+document.getElementById('prev').onclick = () => { if (day > 1) { day--; saveDay(); render(); } };
+document.getElementById('next').onclick = () => { if (day < 100) { day++; saveDay(); render(); } };
+document.getElementById('reset-btn').onclick = () => {
+  state[day] = new Array(HABITS.length).fill(false);
+  saveState(); render();
+};
+document.getElementById('today-btn').onclick = () => {
+  const next = Object.keys(state).map(Number).filter(k => !state[k].every(h => h)).sort((a,b)=>a-b)[0] || 1;
+  day = next; saveDay(); render();
+};
+
+render();
+</script>
+</body>
+</html>
