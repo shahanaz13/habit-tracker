@@ -1,1163 +1,323 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>100-Day Habit Tracker</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-    <style>
-      :root {
-        --blue: #1b4bab;
-        --blue-light: #e6f1fb;
-        --blue-mid: #4a7fd4;
-        --dark: #0f1623;
-        --text: #1a1a2e;
-        --muted: #6b7280;
-        --border: #e5e7eb;
-        --card: #ffffff;
-        --bg: #f8faff;
-      }
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        font-family: "DM Sans", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>100-Day Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
+<style>
+:root{--blue:#1B4BAB;--blue-light:#E6F1FB;--blue-mid:#4A7FD4;--dark:#0F1623;--text:#1a1a2e;--muted:#6b7280;--border:#e5e7eb;--card:#fff;--bg:#f8faff}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--dark)}
+.auth-card{background:#1a2540;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:400px;text-align:center}
+.auth-logo{font-family:'Playfair Display',serif;font-size:1.8rem;color:white;margin-bottom:.25rem}
+.auth-logo span{color:#93b4f0;font-style:italic}
+.auth-sub{color:#6b7280;font-size:13px;margin-bottom:2rem}
+.auth-tabs{display:flex;margin-bottom:1.5rem;border:1px solid rgba(255,255,255,.1);border-radius:10px;overflow:hidden}
+.auth-tab{flex:1;padding:10px;background:transparent;border:none;color:#9ca3af;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.auth-tab.active{background:var(--blue);color:white}
+.auth-input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:white;font-size:14px;font-family:'DM Sans',sans-serif;margin-bottom:12px;outline:none}
+.auth-input:focus{border-color:var(--blue)}
+.auth-input::placeholder{color:#6b7280}
+.auth-btn{width:100%;padding:13px;border-radius:10px;border:none;background:var(--blue);color:white;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px}
+.auth-btn:hover{background:#1a3a6b}
+.auth-btn:disabled{opacity:.6;cursor:default}
+.auth-msg{font-size:12px;margin-top:12px;padding:10px;border-radius:8px;display:none}
+.auth-msg.error{background:rgba(220,38,38,.15);color:#fca5a5;display:block}
+.auth-msg.success{background:rgba(5,150,105,.15);color:#6ee7b7;display:block}
+/* APP */
+.app{display:none}
+.header{background:var(--dark);padding:2rem 2rem 1.75rem;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(27,75,171,.35) 0%,transparent 70%);pointer-events:none}
+.header-top{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto 1rem}
+.header-badge{display:inline-block;background:rgba(27,75,171,.25);color:#93b4f0;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:20px;border:1px solid rgba(27,75,171,.4)}
+.user-info{display:flex;align-items:center;gap:8px}
+.user-email{color:#9ca3af;font-size:12px}
+.logout-btn{padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#9ca3af;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.08);color:white}
+.header h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.6rem);color:#fff;line-height:1.15;margin-bottom:.4rem}
+.header h1 span{color:#93b4f0;font-style:italic}
+.header p{color:#9ca3af;font-size:13px;font-weight:300}
+.quote-bar{background:var(--blue);padding:.75rem 2rem;text-align:center}
+.quote-bar p{color:rgba(255,255,255,.9);font-size:13px;font-style:italic}
+.quote-bar span{color:rgba(255,255,255,.6);font-size:11px;display:block;margin-top:2px}
+.main{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1rem;text-align:center}
+.stat-card .num{font-family:'Playfair Display',serif;font-size:2.2rem;color:var(--blue);line-height:1;margin-bottom:4px}
+.stat-card .lbl{font-size:12px;color:var(--muted)}
+.day-nav{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.5rem}
+.nav-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:16px;color:var(--blue);display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.nav-btn:hover{background:var(--blue-light);border-color:var(--blue)}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.day-info{flex:1;text-align:center}
+.day-info .day-num{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--text);line-height:1}
+.day-info .day-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.prog-outer{flex:1;height:6px;background:var(--blue-light);border-radius:10px;overflow:hidden;max-width:200px}
+.prog-fill{height:100%;background:var(--blue);border-radius:10px;transition:width .4s}
+.done-banner{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-mid) 100%);color:white;border-radius:14px;padding:1.25rem;text-align:center;margin-bottom:1.5rem;display:none}
+.done-banner.show{display:block}
+.done-banner .big{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:4px}
+.done-banner .small{font-size:13px;opacity:.85}
+.habits-title{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.habits{display:flex;flex-direction:column;gap:10px;margin-bottom:2rem}
+.habit{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;cursor:pointer;transition:all .2s;user-select:none}
+.habit:hover{border-color:var(--blue-mid);transform:translateX(3px)}
+.habit.done{border-color:var(--blue);background:linear-gradient(135deg,#f0f6ff 0%,#fff 100%)}
+.habit-emoji{font-size:22px;width:30px;text-align:center;flex-shrink:0}
+.habit-text{flex:1}
+.habit-text .h-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px}
+.habit-text .h-detail{font-size:12px;color:var(--muted)}
+.habit.done .h-name{color:var(--blue)}
+.check-circle{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:13px;color:transparent}
+.habit.done .check-circle{background:var(--blue);border-color:var(--blue);color:white}
+.dots-title{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.dots-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem}
+.dots{display:flex;flex-wrap:wrap;gap:5px}
+.dot{width:16px;height:16px;border-radius:50%;background:var(--blue-light);cursor:pointer;transition:all .15s;border:2px solid transparent}
+.dot:hover{transform:scale(1.3)}
+.dot.current{border-color:var(--blue)}
+.dot.full{background:var(--blue)}
+.dot.partial{background:#93b4f0}
+.dot-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.actions{display:flex;gap:10px}
+.reset-btn{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer}
+.reset-btn:hover{background:#fee2e2;border-color:#fca5a5;color:#dc2626}
+.loading{text-align:center;padding:3rem;color:var(--muted);font-size:14px}
+.saving-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);margin-left:8px;animation:pulse 1s infinite;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
 
-      /* AUTH SCREEN */
-      .auth-wrap {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        background: var(--dark);
-      }
-      .auth-card {
-        background: #1a2540;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        padding: 2.5rem 2rem;
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-      }
-      .auth-logo {
-        font-family: "Playfair Display", serif;
-        font-size: 1.8rem;
-        color: white;
-        margin-bottom: 0.25rem;
-      }
-      .auth-logo span {
-        color: #93b4f0;
-        font-style: italic;
-      }
-      .auth-sub {
-        color: #6b7280;
-        font-size: 13px;
-        margin-bottom: 2rem;
-      }
-      .auth-tabs {
-        display: flex;
-        gap: 0;
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        overflow: hidden;
-      }
-      .auth-tab {
-        flex: 1;
-        padding: 10px;
-        background: transparent;
-        border: none;
-        color: #9ca3af;
-        font-size: 13px;
-        font-family: "DM Sans", sans-serif;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .auth-tab.active {
-        background: var(--blue);
-        color: white;
-      }
-      .auth-input {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-        font-size: 14px;
-        font-family: "DM Sans", sans-serif;
-        margin-bottom: 12px;
-        outline: none;
-        transition: border-color 0.15s;
-      }
-      .auth-input:focus {
-        border-color: var(--blue);
-      }
-      .auth-input::placeholder {
-        color: #6b7280;
-      }
-      .auth-btn {
-        width: 100%;
-        padding: 13px;
-        border-radius: 10px;
-        border: none;
-        background: var(--blue);
-        color: white;
-        font-size: 14px;
-        font-weight: 500;
-        font-family: "DM Sans", sans-serif;
-        cursor: pointer;
-        transition: all 0.15s;
-        margin-top: 4px;
-      }
-      .auth-btn:hover {
-        background: #1a3a6b;
-      }
-      .auth-btn:disabled {
-        opacity: 0.6;
-        cursor: default;
-      }
-      .auth-msg {
-        font-size: 12px;
-        margin-top: 12px;
-        padding: 10px;
-        border-radius: 8px;
-        display: none;
-      }
-      .auth-msg.error {
-        background: rgba(220, 38, 38, 0.15);
-        color: #fca5a5;
-        display: block;
-      }
-      .auth-msg.success {
-        background: rgba(5, 150, 105, 0.15);
-        color: #6ee7b7;
-        display: block;
-      }
+<div class="auth-wrap" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">100-Day <span>Habit</span></div>
+    <div class="auth-sub">Sign in to sync your progress across all devices</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="your@email.com"/>
+    <input class="auth-input" type="password" id="auth-password" placeholder="Password (min 6 characters)"/>
+    <button class="auth-btn" id="auth-submit" onclick="handleAuth()">Sign In</button>
+    <div class="auth-msg" id="auth-msg"></div>
+    <p style="color:#6b7280;font-size:11px;margin-top:1rem;line-height:1.5">Your habit data is private and secure.<br>Only you can see your progress.</p>
+  </div>
+</div>
 
-      /* APP */
-      .app {
-        display: none;
-      }
-      .header {
-        background: var(--dark);
-        padding: 2rem 2rem 1.75rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-      }
-      .header::before {
-        content: "";
-        position: absolute;
-        top: -60px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(
-          circle,
-          rgba(27, 75, 171, 0.35) 0%,
-          transparent 70%
-        );
-        pointer-events: none;
-      }
-      .header-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        max-width: 900px;
-        margin: 0 auto 1rem;
-      }
-      .header-badge {
-        display: inline-block;
-        background: rgba(27, 75, 171, 0.25);
-        color: #93b4f0;
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        padding: 5px 14px;
-        border-radius: 20px;
-        border: 1px solid rgba(27, 75, 171, 0.4);
-      }
-      .user-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .user-email {
-        color: #9ca3af;
-        font-size: 12px;
-      }
-      .logout-btn {
-        padding: 5px 12px;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        background: transparent;
-        color: #9ca3af;
-        font-size: 11px;
-        font-family: "DM Sans", sans-serif;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .logout-btn:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: white;
-      }
-      .header h1 {
-        font-family: "Playfair Display", serif;
-        font-size: clamp(1.8rem, 4vw, 2.6rem);
-        color: #ffffff;
-        line-height: 1.15;
-        margin-bottom: 0.4rem;
-      }
-      .header h1 span {
-        color: #93b4f0;
-        font-style: italic;
-      }
-      .header p {
-        color: #9ca3af;
-        font-size: 13px;
-        font-weight: 300;
-      }
-
-      .quote-bar {
-        background: var(--blue);
-        padding: 0.75rem 2rem;
-        text-align: center;
-      }
-      .quote-bar p {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 13px;
-        font-style: italic;
-      }
-      .quote-bar span {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 11px;
-        display: block;
-        margin-top: 2px;
-      }
-
-      .main {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem 4rem;
-      }
-
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 2rem;
-      }
-      .stat-card {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.25rem 1rem;
-        text-align: center;
-      }
-      .stat-card .num {
-        font-family: "Playfair Display", serif;
-        font-size: 2.2rem;
-        color: var(--blue);
-        line-height: 1;
-        margin-bottom: 4px;
-      }
-      .stat-card .lbl {
-        font-size: 12px;
-        color: var(--muted);
-      }
-
-      .day-nav {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1rem 1.25rem;
-        margin-bottom: 1.5rem;
-      }
-      .nav-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: transparent;
-        cursor: pointer;
-        font-size: 16px;
-        color: var(--blue);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s;
-        flex-shrink: 0;
-      }
-      .nav-btn:hover {
-        background: var(--blue-light);
-        border-color: var(--blue);
-      }
-      .nav-btn:disabled {
-        opacity: 0.3;
-        cursor: default;
-      }
-      .day-info {
-        flex: 1;
-        text-align: center;
-      }
-      .day-info .day-num {
-        font-family: "Playfair Display", serif;
-        font-size: 1.5rem;
-        color: var(--text);
-        line-height: 1;
-      }
-      .day-info .day-sub {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 2px;
-      }
-      .prog-outer {
-        flex: 1;
-        height: 6px;
-        background: var(--blue-light);
-        border-radius: 10px;
-        overflow: hidden;
-        max-width: 200px;
-      }
-      .prog-fill {
-        height: 100%;
-        background: var(--blue);
-        border-radius: 10px;
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .done-banner {
-        background: linear-gradient(
-          135deg,
-          var(--blue) 0%,
-          var(--blue-mid) 100%
-        );
-        color: white;
-        border-radius: 14px;
-        padding: 1.25rem;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        display: none;
-        animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-      .done-banner.show {
-        display: block;
-      }
-      .done-banner .big {
-        font-family: "Playfair Display", serif;
-        font-size: 1.3rem;
-        margin-bottom: 4px;
-      }
-      .done-banner .small {
-        font-size: 13px;
-        opacity: 0.85;
-      }
-      @keyframes popIn {
-        from {
-          transform: scale(0.94);
-          opacity: 0;
-        }
-        to {
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-
-      .habits-title {
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 10px;
-      }
-      .habits {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 2rem;
-      }
-      .habit {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 14px 18px;
-        cursor: pointer;
-        transition: all 0.2s;
-        user-select: none;
-      }
-      .habit:hover {
-        border-color: var(--blue-mid);
-        transform: translateX(3px);
-      }
-      .habit.done {
-        border-color: var(--blue);
-        background: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%);
-      }
-      .habit-emoji {
-        font-size: 22px;
-        width: 30px;
-        text-align: center;
-        flex-shrink: 0;
-      }
-      .habit-text {
-        flex: 1;
-      }
-      .habit-text .h-name {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text);
-        margin-bottom: 2px;
-      }
-      .habit-text .h-detail {
-        font-size: 12px;
-        color: var(--muted);
-      }
-      .habit.done .h-name {
-        color: var(--blue);
-      }
-      .check-circle {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        border: 1.5px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: all 0.2s;
-        font-size: 13px;
-        color: transparent;
-      }
-      .habit.done .check-circle {
-        background: var(--blue);
-        border-color: var(--blue);
-        color: white;
-      }
-
-      .dots-title {
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 10px;
-      }
-      .dots-wrap {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-      }
-      .dots {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-      }
-      .dot {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: var(--blue-light);
-        cursor: pointer;
-        transition: all 0.15s;
-        border: 2px solid transparent;
-      }
-      .dot:hover {
-        transform: scale(1.3);
-      }
-      .dot.current {
-        border-color: var(--blue);
-      }
-      .dot.full {
-        background: var(--blue);
-      }
-      .dot.partial {
-        background: #93b4f0;
-      }
-      .dot-legend {
-        display: flex;
-        gap: 16px;
-        margin-top: 12px;
-        flex-wrap: wrap;
-      }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        color: var(--muted);
-      }
-      .legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-      }
-
-      .actions {
-        display: flex;
-        gap: 10px;
-      }
-      .reset-btn {
-        flex: 1;
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: transparent;
-        color: var(--muted);
-        font-size: 13px;
-        font-family: "DM Sans", sans-serif;
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .reset-btn:hover {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        color: #dc2626;
-      }
-
-      /* LOADING */
-      .loading {
-        text-align: center;
-        padding: 3rem;
-        color: var(--muted);
-        font-size: 14px;
-      }
-      .saving-dot {
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--blue);
-        margin-left: 8px;
-        animation: pulse 1s infinite;
-        vertical-align: middle;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.3;
-        }
-      }
-
-      @media (max-width: 600px) {
-        .prog-outer {
-          display: none;
-        }
-        .user-email {
-          display: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- AUTH SCREEN -->
-    <div class="auth-wrap" id="auth-screen">
-      <div class="auth-card">
-        <div class="auth-logo">100-Day <span>Habit</span></div>
-        <div class="auth-sub">
-          Sign in to sync your progress across all devices
-        </div>
-        <div class="auth-tabs">
-          <button
-            class="auth-tab active"
-            id="tab-login"
-            onclick="switchTab('login')"
-          >
-            Sign In
-          </button>
-          <button
-            class="auth-tab"
-            id="tab-signup"
-            onclick="switchTab('signup')"
-          >
-            Sign Up
-          </button>
-        </div>
-        <input
-          class="auth-input"
-          type="email"
-          id="auth-email"
-          placeholder="your@email.com"
-        />
-        <input
-          class="auth-input"
-          type="password"
-          id="auth-password"
-          placeholder="Password (min 6 characters)"
-        />
-        <button class="auth-btn" id="auth-submit" onclick="handleAuth()">
-          Sign In
-        </button>
-        <div class="auth-msg" id="auth-msg"></div>
-        <p
-          style="
-            color: #6b7280;
-            font-size: 11px;
-            margin-top: 1rem;
-            line-height: 1.5;
-          "
-        >
-          Your habit data is private and secure.<br />Only you can see your
-          progress.
-        </p>
+<div class="app" id="app-screen">
+  <div class="header">
+    <div class="header-top">
+      <div class="header-badge">Your Personal Journey</div>
+      <div class="user-info">
+        <span class="user-email" id="user-email"></span>
+        <button class="logout-btn" id="logout-btn">Sign out</button>
       </div>
     </div>
-
-    <!-- APP -->
-    <div class="app" id="app-screen">
-      <div class="header">
-        <div class="header-top">
-          <div class="header-badge">Your Personal Journey</div>
-          <div class="user-info">
-            <span class="user-email" id="user-email"></span>
-            <button class="logout-btn" onclick="handleLogout()">
-              Sign out
-            </button>
-          </div>
+    <h1>100-Day <span>Habit</span> Tracker</h1>
+    <p>One habit at a time. One day at a time. One life transformed.</p>
+  </div>
+  <div class="quote-bar"><p id="q-text"></p><span id="q-auth"></span></div>
+  <div class="main">
+    <div id="loading-state" class="loading">Loading your progress...</div>
+    <div id="app-content" style="display:none">
+      <div class="stats">
+        <div class="stat-card"><div class="num" id="s-done">0</div><div class="lbl">Days done</div></div>
+        <div class="stat-card"><div class="num" id="s-streak">0</div><div class="lbl">Streak</div></div>
+        <div class="stat-card"><div class="num" id="s-pct">0%</div><div class="lbl">Complete</div></div>
+      </div>
+      <div class="day-nav">
+        <button class="nav-btn" id="prev">&#8592;</button>
+        <div class="day-info">
+          <div class="day-num" id="day-num">Day 1</div>
+          <div class="day-sub" id="day-sub"></div>
         </div>
-        <h1>100-Day <span>Habit</span> Tracker</h1>
-        <p>One habit at a time. One day at a time. One life transformed.</p>
+        <div class="prog-outer"><div class="prog-fill" id="prog"></div></div>
+        <button class="nav-btn" id="next">&#8594;</button>
       </div>
-
-      <div class="quote-bar">
-        <p id="q-text"></p>
-        <span id="q-auth"></span>
+      <div class="done-banner" id="done-banner">
+        <div class="big">Perfect Day! ✦</div>
+        <div class="small">All 7 habits completed. You are unstoppable.</div>
       </div>
-
-      <div class="main">
-        <div id="loading-state" class="loading">Loading your progress...</div>
-        <div id="app-content" style="display: none">
-          <div class="stats">
-            <div class="stat-card">
-              <div class="num" id="s-done">0</div>
-              <div class="lbl">Days done</div>
-            </div>
-            <div class="stat-card">
-              <div class="num" id="s-streak">0</div>
-              <div class="lbl">Streak</div>
-            </div>
-            <div class="stat-card">
-              <div class="num" id="s-pct">0%</div>
-              <div class="lbl">Complete</div>
-            </div>
-          </div>
-
-          <div class="day-nav">
-            <button class="nav-btn" id="prev">&#8592;</button>
-            <div class="day-info">
-              <div class="day-num" id="day-num">Day 1</div>
-              <div class="day-sub" id="day-sub"></div>
-            </div>
-            <div class="prog-outer">
-              <div class="prog-fill" id="prog"></div>
-            </div>
-            <button class="nav-btn" id="next">&#8594;</button>
-          </div>
-
-          <div class="done-banner" id="done-banner">
-            <div class="big">Perfect Day! ✦</div>
-            <div class="small">
-              All 7 habits completed. You are unstoppable.
-            </div>
-          </div>
-
-          <p class="habits-title">
-            Tap each habit to check it off <span id="saving-indicator"></span>
-          </p>
-          <div class="habits" id="habits"></div>
-
-          <p class="dots-title">100-Day Overview</p>
-          <div class="dots-wrap">
-            <div class="dots" id="dots"></div>
-            <div class="dot-legend">
-              <div class="legend-item">
-                <div
-                  class="legend-dot"
-                  style="background: #e6f1fb; border: 1px solid #93b4f0"
-                ></div>
-                Not started
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot" style="background: #93b4f0"></div>
-                Partial
-              </div>
-              <div class="legend-item">
-                <div class="legend-dot" style="background: #1b4bab"></div>
-                Complete
-              </div>
-              <div class="legend-item">
-                <div
-                  class="legend-dot"
-                  style="border: 2px solid #1b4bab; background: #e6f1fb"
-                ></div>
-                Today
-              </div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="reset-btn" id="reset-btn">Reset today</button>
-          </div>
+      <p class="habits-title">Tap each habit to check it off <span id="saving-indicator"></span></p>
+      <div class="habits" id="habits"></div>
+      <p class="dots-title">100-Day Overview</p>
+      <div class="dots-wrap">
+        <div class="dots" id="dots"></div>
+        <div class="dot-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#E6F1FB;border:1px solid #93b4f0"></div>Not started</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#93b4f0"></div>Partial</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1B4BAB"></div>Complete</div>
         </div>
       </div>
+      <div class="actions"><button class="reset-btn" id="reset-btn">Reset today</button></div>
     </div>
+  </div>
+</div>
 
-    <script>
-      // ══════════════════════════════════════════════
-      // PASTE YOUR SUPABASE KEYS HERE
-      const SUPABASE_URL = "https://sydkiyszparelqcleimq.supabase.co";
-      const SUPABASE_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5ZGtpeXN6cGFyZWxxY2xlaW1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNzI1MjcsImV4cCI6MjA5Mjk0ODUyN30.7ijVulK-LPqCR3UJ3szCfMEo5iL1MFBXvj7UlmPhuoM";
-      // ══════════════════════════════════════════════
+<script>
+// ══════════════════════════════════════════════
+// PASTE YOUR SUPABASE KEYS HERE
+  const SUPABASE_URL = "https://sydkiyszparelqcleimq.supabase.co";
+  const SUPABASE_KEY ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN5ZGtpeXN6cGFyZWxxY2xlaW1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNzI1MjcsImV4cCI6MjA5Mjk0ODUyN30.7ijVulK-LPqCR3UJ3szCfMEo5iL1MFBXvj7UlmPhuoM";
+// ══════════════════════════════════════════════
 
-      const { createClient } = supabase;
-      const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true,
-        },
-      });
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      const QUOTES = [
-        ["The secret of getting ahead is getting started.", "Mark Twain"],
-        [
-          "Small daily improvements are the key to staggering long-term results.",
-          "Robin Sharma",
-        ],
-        [
-          "You don't have to be great to start, but you have to start to be great.",
-          "Zig Ziglar",
-        ],
-        [
-          "Take care of your body. It's the only place you have to live.",
-          "Jim Rohn",
-        ],
-        [
-          "An investment in knowledge pays the best interest.",
-          "Benjamin Franklin",
-        ],
-        ["She believed she could, so she did.", "R.S. Grey"],
-        ["Progress, not perfection.", "Unknown"],
-        ["Every day is a chance to be better than yesterday.", "Unknown"],
-        [
-          "Success is the sum of small efforts repeated day in and day out.",
-          "Robert Collier",
-        ],
-        ["You've survived 100% of your bad days so far.", "Unknown"],
-        ["The journey of a thousand miles begins with one step.", "Lao Tzu"],
-        [
-          "Reading is to the mind what exercise is to the body.",
-          "Joseph Addison",
-        ],
-        ["Believe you can and you're halfway there.", "Theodore Roosevelt"],
-        [
-          "Don't watch the clock. Do what it does — keep going.",
-          "Sam Levenson",
-        ],
-        [
-          "You are never too old to set another goal or dream a new dream.",
-          "C.S. Lewis",
-        ],
-      ];
+const QUOTES=[["The secret of getting ahead is getting started.","Mark Twain"],["Small daily improvements are the key to staggering long-term results.","Robin Sharma"],["You don't have to be great to start, but you have to start to be great.","Zig Ziglar"],["Take care of your body. It's the only place you have to live.","Jim Rohn"],["An investment in knowledge pays the best interest.","Benjamin Franklin"],["She believed she could, so she did.","R.S. Grey"],["Progress, not perfection.","Unknown"],["Every day is a chance to be better than yesterday.","Unknown"],["Success is the sum of small efforts repeated day in and day out.","Robert Collier"],["You've survived 100% of your bad days so far.","Unknown"],["The journey of a thousand miles begins with one step.","Lao Tzu"],["Reading is to the mind what exercise is to the body.","Joseph Addison"],["Believe you can and you're halfway there.","Theodore Roosevelt"],["Don't watch the clock. Do what it does — keep going.","Sam Levenson"],["You are never too old to set another goal or dream a new dream.","C.S. Lewis"]];
+const HABITS=[{e:"📚",n:"1 Hour of Learning",d:"React, cybersecurity, Lovable — pick one and go deep"},{e:"🧴",n:"Skincare Routine",d:"Cleanse, moisturize, SPF morning — repeat at night"},{e:"💆",n:"Haircare",d:"Oil, brush, or treatment — at least one step today"},{e:"📖",n:"Read 5 Pages",d:"Any book from your list — even 5 pages counts"},{e:"🏃",n:"10 Min Exercise",d:"Stretch, yoga, or home workout — just move"},{e:"🚶",n:"Go for a Walk",d:"10-15 min outside — fresh air resets the mind"},{e:"🥗",n:"No Junk Food",d:"Whole foods only — you and your family deserve the best"}];
+const PHASES=[[1,10,"Foundation"],[11,25,"Building"],[26,50,"Consistency"],[51,75,"Momentum"],[76,100,"Finish Strong"]];
 
-      const HABITS = [
-        {
-          e: "📚",
-          n: "1 Hour of Learning",
-          d: "React, cybersecurity, Lovable — pick one and go deep",
-        },
-        {
-          e: "🧴",
-          n: "Skincare Routine",
-          d: "Cleanse, moisturize, SPF morning — repeat at night",
-        },
-        {
-          e: "💆",
-          n: "Haircare",
-          d: "Oil, brush, or treatment — at least one step today",
-        },
-        {
-          e: "📖",
-          n: "Read 5 Pages",
-          d: "Any book from your list — even 5 pages counts",
-        },
-        {
-          e: "🏃",
-          n: "10 Min Exercise",
-          d: "Stretch, yoga, or home workout — just move",
-        },
-        {
-          e: "🚶",
-          n: "Go for a Walk",
-          d: "10-15 min outside — fresh air resets the mind",
-        },
-        {
-          e: "🥗",
-          n: "No Junk Food",
-          d: "Whole foods only — you and your family deserve the best",
-        },
-      ];
+let currentDay=1, state={}, authMode='login', currentUser=null;
 
-      const PHASES = [
-        [1, 10, "Foundation"],
-        [11, 25, "Building"],
-        [26, 50, "Consistency"],
-        [51, 75, "Momentum"],
-        [76, 100, "Finish Strong"],
-      ];
+// ── AUTH ──
+function switchTab(m){
+  authMode=m;
+  document.getElementById('tab-login').className='auth-tab'+(m==='login'?' active':'');
+  document.getElementById('tab-signup').className='auth-tab'+(m==='signup'?' active':'');
+  document.getElementById('auth-submit').textContent=m==='login'?'Sign In':'Create Account';
+  document.getElementById('auth-msg').className='auth-msg';
+}
 
-      let currentDay = 1;
-      let state = {};
-      let authMode = "login";
-      let currentUser = null;
+async function handleAuth(){
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
+  const btn=document.getElementById('auth-submit');
+  const msg=document.getElementById('auth-msg');
+  if(!email||!password){msg.textContent='Please enter email and password.';msg.className='auth-msg error';return;}
+  btn.disabled=true;
+  btn.textContent=authMode==='login'?'Signing in...':'Creating account...';
+  msg.className='auth-msg';
+  const result=authMode==='login'
+    ? await sb.auth.signInWithPassword({email,password})
+    : await sb.auth.signUp({email,password});
+  if(result.error){
+    msg.textContent=result.error.message;
+    msg.className='auth-msg error';
+    btn.disabled=false;
+    btn.textContent=authMode==='login'?'Sign In':'Create Account';
+  } else if(authMode==='signup'&&!result.data.session){
+    msg.textContent='Check your email for a confirmation link!';
+    msg.className='auth-msg success';
+    btn.disabled=false;
+    switchTab('login');
+  }
+}
 
-      // ── HELPERS ──────────────────────────────────
-      function showScreen(screen) {
-        // screen = 'auth' or 'app'
-        const authEl = document.getElementById("auth-screen");
-        const appEl = document.getElementById("app-screen");
-        if (screen === "auth") {
-          authEl.style.display = "flex";
-          appEl.style.display = "none";
-        } else {
-          authEl.style.display = "none";
-          appEl.style.display = "block";
-          appEl.className = "app";
-        }
-      }
+function doLogout(){
+  sb.auth.signOut().catch(()=>{});
+  currentUser=null; state={};
+  try{localStorage.clear();}catch(e){}
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('app-screen').className='app';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('auth-msg').className='auth-msg';
+  const btn=document.getElementById('auth-submit');
+  btn.disabled=false; btn.textContent='Sign In';
+}
 
-      function showLoading(show) {
-        const loadEl = document.getElementById("loading-state");
-        const contentEl = document.getElementById("app-content");
-        if (loadEl) loadEl.style.display = show ? "block" : "none";
-        if (contentEl) contentEl.style.display = show ? "none" : "block";
-      }
+// ── DATA ──
+async function loadAllData(userId){
+  console.log('Fetching from DB...');
+  const {data,error}=await sb.from('habit_logs').select('day,habits').eq('user_id',userId);
+  if(error){console.error('DB Error:',error.message,error.code,error.hint);return;}
+  state={};
+  if(data) data.forEach(r=>{state[r.day]=r.habits;});
+  console.log('Loaded rows:',data?data.length:0);
+}
 
-      // ── AUTH ──────────────────────────────────────
-      function switchTab(mode) {
-        authMode = mode;
-        document.getElementById("tab-login").className =
-          "auth-tab" + (mode === "login" ? " active" : "");
-        document.getElementById("tab-signup").className =
-          "auth-tab" + (mode === "signup" ? " active" : "");
-        document.getElementById("auth-submit").textContent =
-          mode === "login" ? "Sign In" : "Create Account";
-        document.getElementById("auth-msg").className = "auth-msg";
-      }
+async function saveDay(day){
+  if(!currentUser) return;
+  const ind=document.getElementById('saving-indicator');
+  if(ind) ind.innerHTML='<span class="saving-dot"></span>';
+  const habits=state[day]||new Array(7).fill(false);
+  const {error}=await sb.from('habit_logs').upsert(
+    {user_id:currentUser.id,day,habits,updated_at:new Date().toISOString()},
+    {onConflict:'user_id,day'}
+  );
+  if(error) console.error('Save error:',error.message);
+  else console.log('Day',day,'saved');
+  setTimeout(()=>{if(ind)ind.innerHTML='';},800);
+}
 
-      async function handleAuth() {
-        const email = document.getElementById("auth-email").value.trim();
-        const password = document.getElementById("auth-password").value;
-        const btn = document.getElementById("auth-submit");
-        const msg = document.getElementById("auth-msg");
+function getDay(d){if(!state[d])state[d]=new Array(7).fill(false);return state[d];}
+function countFull(){let c=0;for(let i=1;i<=100;i++){if(state[i]&&state[i].every(h=>h))c++;}return c;}
+function calcStreak(){let s=0;for(let i=currentDay;i>=1;i--){if(state[i]&&state[i].every(h=>h))s++;else break;}return s;}
+function getPhase(d){for(let[s,e,n]of PHASES){if(d>=s&&d<=e)return n;}return '';}
 
-        if (!email || !password) {
-          msg.textContent = "Please enter your email and password.";
-          msg.className = "auth-msg error";
-          return;
-        }
+// ── RENDER ──
+function render(){
+  const q=QUOTES[(currentDay-1)%QUOTES.length];
+  document.getElementById('q-text').textContent='\u201c'+q[0]+'\u201d';
+  document.getElementById('q-auth').textContent='— '+q[1];
+  const full=countFull();
+  document.getElementById('s-done').textContent=full;
+  document.getElementById('s-streak').textContent=calcStreak();
+  document.getElementById('s-pct').textContent=Math.round(full)+'%';
+  document.getElementById('day-num').textContent='Day '+currentDay;
+  document.getElementById('day-sub').textContent=getPhase(currentDay)+' Phase';
+  document.getElementById('prog').style.width=currentDay+'%';
+  const d=getDay(currentDay);
+  document.getElementById('done-banner').className='done-banner'+(d.every(h=>h)?' show':'');
+  const hab=document.getElementById('habits');
+  hab.innerHTML='';
+  HABITS.forEach((h,i)=>{
+    const done=d[i];
+    const el=document.createElement('div');
+    el.className='habit'+(done?' done':'');
+    el.innerHTML='<div class="habit-emoji">'+h.e+'</div><div class="habit-text"><div class="h-name">'+h.n+'</div><div class="h-detail">'+h.d+'</div></div><div class="check-circle">'+(done?'✓':'')+'</div>';
+    el.onclick=async()=>{d[i]=!d[i];render();await saveDay(currentDay);};
+    hab.appendChild(el);
+  });
+  const dotsEl=document.getElementById('dots');
+  dotsEl.innerHTML='';
+  for(let i=1;i<=100;i++){
+    const dot=document.createElement('div');
+    const sd=state[i];
+    const isFull=sd&&sd.every(h=>h);
+    const isPart=sd&&sd.some(h=>h)&&!isFull;
+    dot.className='dot'+(i===currentDay?' current':'')+(isFull?' full':isPart?' partial':'');
+    dot.title='Day '+i;
+    dot.onclick=()=>{currentDay=i;render();};
+    dotsEl.appendChild(dot);
+  }
+  document.getElementById('prev').disabled=currentDay===1;
+  document.getElementById('next').disabled=currentDay===100;
+}
 
-        btn.disabled = true;
-        btn.textContent =
-          authMode === "login" ? "Signing in..." : "Creating account...";
-        msg.className = "auth-msg";
+// ── BOOT ──
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+document.getElementById('prev').addEventListener('click',()=>{if(currentDay>1){currentDay--;render();}});
+document.getElementById('next').addEventListener('click',()=>{if(currentDay<100){currentDay++;render();}});
+document.getElementById('reset-btn').addEventListener('click',async()=>{state[currentDay]=new Array(7).fill(false);render();await saveDay(currentDay);});
+document.getElementById('auth-password').addEventListener('keydown',e=>{if(e.key==='Enter')handleAuth();});
 
-        let result;
-        if (authMode === "login") {
-          result = await sb.auth.signInWithPassword({ email, password });
-        } else {
-          result = await sb.auth.signUp({ email, password });
-        }
-
-        if (result.error) {
-          msg.textContent = result.error.message;
-          msg.className = "auth-msg error";
-          btn.disabled = false;
-          btn.textContent = authMode === "login" ? "Sign In" : "Create Account";
-        } else if (authMode === "signup" && !result.data.session) {
-          msg.textContent =
-            "Check your email for a confirmation link, then sign in!";
-          msg.className = "auth-msg success";
-          btn.disabled = false;
-          btn.textContent = "Sign In";
-          switchTab("login");
-        }
-      }
-
-      async function handleLogout() {
-        console.log("Logging out...");
-        try {
-          await sb.auth.signOut();
-        } catch (e) {
-          console.log("signOut error:", e);
-        }
-        currentUser = null;
-        state = {};
-        try {
-          localStorage.clear();
-        } catch (e) {}
-        showScreen("auth");
-        // Reset auth form
-        const msg = document.getElementById("auth-msg");
-        if (msg) msg.className = "auth-msg";
-        const btn = document.getElementById("auth-submit");
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = "Sign In";
-        }
-      }
-
-      // ── DATA ──────────────────────────────────────
-      async function loadAllData(userId) {
-        console.log("Loading data for user:", userId);
-        try {
-          const { data, error } = await sb
-            .from("habit_logs")
-            .select("day, habits")
-            .eq("user_id", userId);
-
-          if (error) {
-            console.error("Load error:", JSON.stringify(error));
-            return;
-          }
-
-          state = {};
-          if (data && data.length > 0) {
-            data.forEach((row) => {
-              state[row.day] = row.habits;
-            });
-            console.log("Loaded", data.length, "days");
-          } else {
-            console.log("No data yet - fresh start");
-          }
-        } catch (e) {
-          console.error("Load exception:", e);
-        }
-      }
-
-      async function saveDay(day) {
-        if (!currentUser) {
-          console.warn("No user — skipping save");
-          return;
-        }
-
-        const indicator = document.getElementById("saving-indicator");
-        if (indicator) indicator.innerHTML = '<span class="saving-dot"></span>';
-
-        const habits = state[day] || new Array(HABITS.length).fill(false);
-        console.log("Saving day", day, habits);
-
-        try {
-          const { data, error } = await sb.from("habit_logs").upsert(
-            {
-              user_id: currentUser.id,
-              day: day,
-              habits: habits,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id,day" },
-          );
-
-          if (error) {
-            console.error("Save error:", JSON.stringify(error));
-          } else {
-            console.log("Saved successfully");
-          }
-        } catch (e) {
-          console.error("Save exception:", e);
-        } finally {
-          setTimeout(() => {
-            if (indicator) indicator.innerHTML = "";
-          }, 800);
-        }
-      }
-
-      function getDay(d) {
-        if (!state[d]) state[d] = new Array(HABITS.length).fill(false);
-        return state[d];
-      }
-
-      function countFull() {
-        let c = 0;
-        for (let i = 1; i <= 100; i++) {
-          if (state[i] && state[i].every((h) => h)) c++;
-        }
-        return c;
-      }
-
-      function calcStreak() {
-        let s = 0;
-        for (let i = currentDay; i >= 1; i--) {
-          if (state[i] && state[i].every((h) => h)) s++;
-          else break;
-        }
-        return s;
-      }
-
-      function getPhase(d) {
-        for (let [s, e, name] of PHASES) {
-          if (d >= s && d <= e) return name;
-        }
-        return "";
-      }
-
-      // ── RENDER ────────────────────────────────────
-      function render() {
-        const q = QUOTES[(currentDay - 1) % QUOTES.length];
-        const qText = document.getElementById("q-text");
-        const qAuth = document.getElementById("q-auth");
-        if (qText) qText.textContent = "“" + q[0] + "”";
-        if (qAuth) qAuth.textContent = "— " + q[1];
-
-        const full = countFull();
-        document.getElementById("s-done").textContent = full;
-        document.getElementById("s-streak").textContent = calcStreak();
-        document.getElementById("s-pct").textContent =
-          Math.round((full / 100) * 100) + "%";
-        document.getElementById("day-num").textContent = "Day " + currentDay;
-        document.getElementById("day-sub").textContent =
-          getPhase(currentDay) + " Phase";
-        document.getElementById("prog").style.width = currentDay + "%";
-
-        const d = getDay(currentDay);
-        const allDone = d.every((h) => h);
-        const banner = document.getElementById("done-banner");
-        if (banner) banner.className = "done-banner" + (allDone ? " show" : "");
-
-        const habitsEl = document.getElementById("habits");
-        if (habitsEl) {
-          habitsEl.innerHTML = "";
-          HABITS.forEach((h, i) => {
-            const done = d[i];
-            const el = document.createElement("div");
-            el.className = "habit" + (done ? " done" : "");
-            el.innerHTML =
-              '<div class="habit-emoji">' +
-              h.e +
-              '</div><div class="habit-text"><div class="h-name">' +
-              h.n +
-              '</div><div class="h-detail">' +
-              h.d +
-              '</div></div><div class="check-circle">' +
-              (done ? "✓" : "") +
-              "</div>";
-            el.onclick = async () => {
-              d[i] = !d[i];
-              render();
-              await saveDay(currentDay);
-            };
-            habitsEl.appendChild(el);
-          });
-        }
-
-        const dotsEl = document.getElementById("dots");
-        if (dotsEl) {
-          dotsEl.innerHTML = "";
-          for (let i = 1; i <= 100; i++) {
-            const dot = document.createElement("div");
-            const sd = state[i];
-            const isFull = sd && sd.every((h) => h);
-            const isPartial = sd && sd.some((h) => h) && !isFull;
-            dot.className =
-              "dot" +
-              (i === currentDay ? " current" : "") +
-              (isFull ? " full" : isPartial ? " partial" : "");
-            dot.title = "Day " + i;
-            dot.onclick = () => {
-              currentDay = i;
-              render();
-            };
-            dotsEl.appendChild(dot);
-          }
-        }
-
-        const prev = document.getElementById("prev");
-        const next = document.getElementById("next");
-        if (prev) prev.disabled = currentDay === 1;
-        if (next) next.disabled = currentDay === 100;
-      }
-
-      // ── INIT ──────────────────────────────────────
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("prev").onclick = () => {
-          if (currentDay > 1) {
-            currentDay--;
-            render();
-          }
-        };
-        document.getElementById("next").onclick = () => {
-          if (currentDay < 100) {
-            currentDay++;
-            render();
-          }
-        };
-        document.getElementById("reset-btn").onclick = async () => {
-          state[currentDay] = new Array(HABITS.length).fill(false);
-          render();
-          await saveDay(currentDay);
-        };
-        document
-          .getElementById("auth-password")
-          .addEventListener("keydown", (e) => {
-            if (e.key === "Enter") handleAuth();
-          });
-      });
-
-      sb.auth.onAuthStateChange(async (event, session) => {
-        console.log("Auth state changed:", event);
-
-        if (event === "SIGNED_OUT") {
-          showScreen("auth");
-          return;
-        }
-
-        if (session && session.user) {
-          currentUser = session.user;
-          document.getElementById("user-email").textContent =
-            session.user.email;
-          showScreen("app");
-          showLoading(true);
-
-          const timeout = setTimeout(() => {
-            console.warn("Load timed out — showing empty tracker");
-            showLoading(false);
-            render();
-          }, 6000);
-
-          await loadAllData(session.user.id);
-          clearTimeout(timeout);
-          showLoading(false);
-          render();
-        }
-      });
-    </script>
-  </body>
+sb.auth.onAuthStateChange(async(event,session)=>{
+  console.log('Auth:',event);
+  if(event==='SIGNED_OUT'||!session){
+    document.getElementById('app-screen').style.display='none';
+    document.getElementById('auth-screen').style.display='flex';
+    return;
+  }
+  if(session.user){
+    currentUser=session.user;
+    document.getElementById('user-email').textContent=session.user.email;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app-screen').style.display='block';
+    document.getElementById('loading-state').style.display='block';
+    document.getElementById('app-content').style.display='none';
+    await loadAllData(session.user.id);
+    document.getElementById('loading-state').style.display='none';
+    document.getElementById('app-content').style.display='block';
+    render();
+  }
+});
+</script>
+</body>
 </html>
