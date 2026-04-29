@@ -312,10 +312,18 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     document.getElementById('app-screen').style.display='block';
     document.getElementById('loading-state').style.display='block';
     document.getElementById('app-content').style.display='none';
-    await loadAllData(session.user.id);
-    document.getElementById('loading-state').style.display='none';
-    document.getElementById('app-content').style.display='block';
-    render();
+    // Load data with guaranteed display
+const loadPromise = loadAllData(session.user.id);
+const timeoutPromise = new Promise(resolve => setTimeout(resolve, 3000));
+
+// Wait for whichever finishes first
+await Promise.race([loadPromise, timeoutPromise]);
+
+// Always show the app no matter what
+document.getElementById('loading-state').style.display = 'none';
+document.getElementById('app-content').style.display = 'block';
+render();
+   
   }
 });
 </script>
