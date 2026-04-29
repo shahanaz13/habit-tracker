@@ -383,11 +383,18 @@ async function handleAuth() {
 }
 
 async function handleLogout() {
-  await sb.auth.signOut();
+  try {
+    await sb.auth.signOut();
+  } catch(e) {
+    console.log('Signout error (ignored):', e);
+  }
+  // Force clear everything regardless
   currentUser = null;
   state = {};
+  localStorage.clear();
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-msg').className = 'auth-msg';
 }
 
 // ── DATA ──────────────────────────────────────
@@ -513,25 +520,54 @@ document.getElementById('auth-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') handleAuth();
 });
 
+function showApp(user) {
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('app-screen').className = 'app';
+  document.getElementById('user-email').textContent = user.email;
+}
+
+function showLoading(show) {
+  document.getElementById('loading-state').style.display = show ? 'block' : 'none';
+  document.getElementById('app-content').style.display = show ? 'none' : 'block';
+}
+
+function showAuth() {
+  currentUser = null;
+  state = {};
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
 sb.auth.onAuthStateChange(async (event, session) => {
+  console.log('Auth event:', event, session ? 'has session' : 'no session');
+  
+  if (event === 'SIGNED_OUT' || (!session && event !== 'INITIAL_SESSION')) {
+    showAuth();
+    return;
+  }
+
   if (session && session.user) {
-    currentUser = session.user;
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('app-screen').className = 'app';
-    document.getElementById('app-screen').style.display = 'block';
-    document.getElementById('user-email').textContent = session.user.email;
-    document.getElementById('loading-state').style.display = 'block';
-    document.getElementById('app-content').style.display = 'none';
-    await loadAllData(session.user.id);
-    document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('app-content').style.display = 'block';
-    render();
-  } else if (event === 'SIGNED_OUT') {
-    currentUser = null;
-    state = {};
-    document.getElementById('app-screen').style.display = 'none';
-    document.getElementById('auth-screen').style.display = 'flex';
+    showApp(session.user);
+    showLoading(true);
+    
+    // Set a timeout so it never gets stuck forever
+    const timeout = setTimeout(() => {
+      console.warn('Load timed out — showing empty tracker');
+      showLoading(false);
+      render();
+    }, 5000);
+
+    try {
+      await loadAllData(session.user.id);
+    } catch(e) {
+      console.error('Load failed:', e);
+    } finally {
+      clearTimeout(timeout);
+      showLoading(false);
+      render();
+    }
   }
 });
 </script>
